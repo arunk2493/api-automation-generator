@@ -55,6 +55,13 @@
           <div id="paginationControls" style="margin-top:10px;"></div>
           <button id="downloadBtn" style="display:none; margin-top: 10px;" onclick="downloadCSV()">Download CSV</button>
         </div>
+
+        <div id="rawJsonModal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:80vw; max-height:80vh; overflow:auto; background:#fff; padding:20px; border-radius:8px;">
+                <pre id="rawJsonContent" style="white-space: pre-wrap;"></pre>
+                <button onclick="closeRawJsonModal()">Close</button>
+            </div>
+        </div>
       </div>
     </div>
   </div>

@@ -60,16 +60,20 @@ async function generateTestCases() {
     const data = await response.json();
 
     const testCasesParsed = parseTestCases(data);
-    if (testCasesParsed.length === 0) {
-      showToast("No valid test cases returned");
-      return;
-    }
+  console.log("Parsed test cases:", testCasesParsed);
 
-    displayResults(testCasesParsed);
-    showToast("Test cases generated! Please download the CSV for details.");
-    downloadBtn.style.display = "inline-block";
+  if (!Array.isArray(testCasesParsed) || testCasesParsed.length === 0) {
+    throw new Error("Parsed array is empty or invalid.");
+  }
+
+  displayResults(testCasesParsed);
+  showToast("Test cases generated!");
+  document.getElementById('results').style.display = 'block';
+  downloadBtn.style.display = "inline-block";
+
   } catch (error) {
     showToast("Fetch error: " + error.message);
+    if (data) showRawJsonModal(JSON.stringify(data, null, 2));
   } finally {
     spinner.style.display = "none";
     btnText.textContent = "Generate";
@@ -252,26 +256,52 @@ function parseTestCases(data) {
     throw new Error("Invalid data format");
   }
 
-  let lines = data.test_cases;
-
-  // Remove markdown code fences ```json and ```
-  if (lines[0]?.trim().startsWith("```")) lines.shift();
-  if (lines[lines.length - 1]?.trim().startsWith("```")) lines.pop();
-
-  // Join lines to one string
-  let jsonString = lines.join("\n");
-
-  // Remove JS-style comments (// comment)
-  jsonString = jsonString.replace(/\/\/.*$/gm, "");
-
-  // Remove trailing commas before } or ]
-  jsonString = jsonString.replace(/,\s*([\]}])/g, "$1");
-
   try {
-    return JSON.parse(jsonString);
+    let lines = data.test_cases;
+
+    // Remove markdown code fences and empty lines
+    lines = lines.filter(line => !line.trim().startsWith("```") && line.trim() !== "");
+
+    // Remove lines that are comments or explanations
+    lines = lines.filter(line => !line.trim().startsWith("*") && !line.includes("Improvements"));
+
+    // Join into one string
+    let jsonString = lines.join("\n");
+
+    // Remove JS-style comments (// ...)
+    jsonString = jsonString.replace(/\/\/.*$/gm, "");
+
+    // Remove trailing commas before closing braces/brackets
+    jsonString = jsonString.replace(/,\s*([\]}])/g, "$1");
+
+    // Replace "string".repeat(n) with repeated string
+    jsonString = jsonString.replace(/"([^"]*)"\.repeat\((\d+)\)/g, (match, str, count) => {
+      return `"${str.repeat(Number(count))}"`;
+    });
+
+    // Trim to just the JSON array part
+    const arrayStart = jsonString.indexOf("[");
+    const arrayEnd = jsonString.lastIndexOf("]");
+
+    if (arrayStart === -1 || arrayEnd === -1) {
+      throw new Error("Could not locate valid JSON array in response");
+    }
+
+    const cleanArrayStr = jsonString.substring(arrayStart, arrayEnd + 1);
+
+    return JSON.parse(cleanArrayStr);
   } catch (err) {
     console.error("JSON parse error:", err);
-    showToast("Failed to parse test cases JSON from backend");
+    showToast(`Failed to parse test cases: ${err.message}`, 10000);
     return [];
   }
+}
+
+function showRawJsonModal(jsonStr) {
+  document.getElementById("rawJsonContent").textContent = jsonStr;
+  document.getElementById("rawJsonModal").style.display = "block";
+}
+
+function closeRawJsonModal() {
+  document.getElementById("rawJsonModal").style.display = "none";
 }

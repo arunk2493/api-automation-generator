@@ -18,7 +18,7 @@ class TestCaseGenerator:
     def generate_test_cases(self, api_path: str, method: str, body: str):
         try:
             prompt = build_test_case_prompt(api_path, method, body)
-            logger.info("Sending prompt to Gemini with method: %s and path: %s", method, api_path)
+            logger.info("Sending prompt to Gemini with method: %s and path: %s and body: %s", method, api_path, body)
             response = self.model.generate_content(prompt)
             return response.text.strip().split("\n")
         except Exception as e:
