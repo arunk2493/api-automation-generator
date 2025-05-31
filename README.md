@@ -1,1 +1,11 @@
-Details
+### Steps to run the code in local:
+
+1. Clone the repository
+2. Set the Gemini API key as environment variable
+3. From the root of the project run
+   1. source venv/bin/activate
+   2. pip install -r requirements.txt
+   3. uvicorn main:app --reload
+   4. Add your API path, Method and request body
+
+<img width="1470" alt="Screenshot 2025-06-01 at 1 38 53 AM" src="https://github.com/user-attachments/assets/31559c64-e12d-456e-84af-a9dcfb8e4ba6" />
