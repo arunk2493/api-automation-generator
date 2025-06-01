@@ -1,69 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>API Test Case Generator</title>
-  <link rel="stylesheet" href="style.css" />
-  <script defer src="script.js"></script>
-</head>
-<body>
-  <div id="toast" class="toast"></div>
-  <div class="container">
-    <div class="sidebar" id="sidebar">
-      <div class="hamburger" onclick="toggleSidebar()">☰</div>
-      <div class="menu" id="menu">
-        <div class="menu-item" onclick="showGenerator()">Generate API Test Cases</div>
-      </div>
-    </div>
-
-    <div class="main-content" id="mainContent">
-      <div class="generator-section" id="generatorSection">
-        <h2>Generate API Test Cases</h2>
-
-        <label for="method">HTTP Method:</label>
-        <select id="method">
-          <option>GET</option>
-          <option>POST</option>
-          <option>PUT</option>
-          <option>DELETE</option>
-        </select>
-
-        <label for="apiPath">API Path:</label>
-        <textarea id="apiPath" rows="1" placeholder="/api/v1/users"></textarea>
-
-        <label for="requestBody" id="requestLabel">Request JSON / Query Params:</label>
-        <textarea id="requestBody" rows="6" placeholder='{"name": "John"}'></textarea>
-
-        <div class="button-row">
-          <button id="generateBtn" onclick="generateTestCases()">
-            <span class="spinner" style="display:none;"></span>
-            <span class="btn-text">Generate</span>
-          </button>
-          <button id="clearBtn" onclick="clearInputs()">
-            <span class="spinner" style="display:none;"></span>
-            <span class="btn-text">Clear</span>
-          </button>
-        </div>
-
-        <div id="results" style="display:none; margin-top: 20px;">
-          <table border="1" style="width:100%; border-collapse: collapse;">
-            <thead>
-              <tr id="tableHeader"></tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-          <div id="paginationControls" style="margin-top:10px;"></div>
-          <button id="downloadBtn" style="display:none; margin-top: 10px;" onclick="downloadCSV()">Download CSV</button>
-        </div>
-
-        <div id="rawJsonModal" class="modal" style="display:none;">
-            <div class="modal-content" style="max-width:80vw; max-height:80vh; overflow:auto; background:#fff; padding:20px; border-radius:8px;">
-                <pre id="rawJsonContent" style="white-space: pre-wrap;"></pre>
-                <button onclick="closeRawJsonModal()">Close</button>
+   <head>
+      <meta charset="UTF-8" />
+      <title>API Test Case Generator</title>
+      <link rel="stylesheet" href="style.css" />
+      <script defer src="script.js"></script>
+   </head>
+   <body>
+      <div id="toast" class="toast"></div>
+      <div class="container">
+         <div class="sidebar" id="sidebar">
+            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+            <div class="menu" id="menu">
+               <div class="menu-item" onclick="showGenerator()">Generate API Test Cases</div>
             </div>
-        </div>
+         </div>
+         <div class="main-content" id="mainContent">
+            <div class="generator-section" id="generatorSection">
+               <h2>Generate API Test Cases</h2>
+               <label for="method">HTTP Method:</label>
+               <select id="method">
+                  <option>GET</option>
+                  <option>POST</option>
+                  <option>PUT</option>
+                  <option>DELETE</option>
+               </select>
+               <label for="apiPath">API Path:</label>
+               <textarea id="apiPath" rows="1" placeholder="/api/v1/users"></textarea>
+               <label for="requestBody" id="requestLabel">Request JSON / Query Params:</label>
+               <textarea id="requestBody" rows="6" placeholder='{"name": "John"}'></textarea>
+               <div class="button-row">
+                  <button id="generateBtn" onclick="generateTestCases()">
+                  <span class="spinner" style="display:none;"></span>
+                  <span class="btn-text">Generate</span>
+                  </button>
+                  <button id="clearBtn" onclick="clearInputs()">
+                  <span class="spinner" style="display:none;"></span>
+                  <span class="btn-text">Clear</span>
+                  </button>
+               </div>
+               <div id="results" style="display:none; margin-top: 20px;">
+                  <table border="1" style="width:100%; border-collapse: collapse;">
+                     <thead>
+                        <tr id="tableHeader"></tr>
+                     </thead>
+                     <tbody id="tableBody"></tbody>
+                  </table>
+                  <div id="paginationControls" style="margin-top:10px;"></div>
+                  <div style="margin-top: 10px;">
+                     <button id="downloadBtn" style="display:none;" onclick="downloadCSV()">Download CSV</button>
+                     <button id="generateCodeBtn" style="display:none;" onclick="generateCode()">Generate Code</button>
+                  </div>
+                  <!-- Code layout below buttons -->
+                  <div id="codeLayout" class="code-layout" style="margin-top: 30px; display:none;">
+                     <div class="code-header">
+                        <label>
+                        <input type="checkbox" id="toggleCodeType" onchange="toggleCodeType()" />Show Karate Feature Code
+                        </label>
+                        <div id="spinner" style="display:none;">
+                          <svg width="24" height="24" viewBox="0 0 38 38" stroke="#555">
+                            <g fill="none" fill-rule="evenodd">
+                              <g transform="translate(1 1)" stroke-width="2">
+                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+                                <path d="M36 18c0-9.94-8.06-18-18-18">
+                                  <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+                                </path>
+                              </g>
+                            </g>
+                          </svg>
+                        </div>
+                        <button id="copyCodeBtn" onclick="copyCode()">Copy</button>
+                     </div>
+                     <div id="javaCodeOutput" style="margin-top: 30px; display: block;">
+                        <h3>Generated Test Code</h3>
+                        <pre><code id="javaCodeBlock" style="white-space: pre-wrap; background: #090909; padding: 15px; border-radius: 5px; display: block;"></code></pre>
+                     </div>
+                  </div>
+               </div>
+               <div id="rawJsonModal" class="modal" style="display:none;">
+                  <div class="modal-content" style="max-width:80vw; max-height:80vh; overflow:auto; background:#fff; padding:20px; border-radius:8px;">
+                     <pre id="rawJsonContent" style="white-space: pre-wrap;"></pre>
+                     <button onclick="closeRawJsonModal()">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
-    </div>
-  </div>
-</body>
+   </body>
 </html>

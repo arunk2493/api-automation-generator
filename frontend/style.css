@@ -215,3 +215,52 @@ button:hover {
 #downloadBtn:hover {
   background-color: #218838;
 }
+/* Code layout container */
+#code-layout {
+  display: none; /* hidden by default, shown on demand */
+  flex-direction: column;
+  background: #1e1e1e; /* dark background for code */
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  box-sizing: border-box;
+  color: #f8f8f2;
+  font-family: 'Source Code Pro', monospace, monospace;
+  overflow: hidden;
+}
+
+/* Header above code area with buttons and toggle */
+#codeLayout .code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+/* Example: container for toggle switch and copy button */
+#codeLayout .code-header > * {
+  margin-left: 8px;
+}
+
+/* Code text area styling */
+#codeArea, #codeBlock {
+  width: 100%;
+  height: 400px; /* or use flex-grow for responsive height */
+  background: #282c34;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: #f8f8f2;
+  font-family: 'Source Code Pro', monospace, monospace;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+  overflow: auto;
+}
+pre {
+  white-space: pre-wrap;
+  max-height: 600px;
+  overflow-y: auto;
+}
