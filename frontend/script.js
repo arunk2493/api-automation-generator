@@ -31,6 +31,8 @@ function clearInputs() {
         downloadBtn.style.display = "none"; // hide download button on clear
         generateBtn.disabled = false;
         toggleButtonSpinner(clearBtn, false);
+        // Clear request body preview
+        showRequestBodyFromTestCase(null);
     }, 500);
 }
 
@@ -153,6 +155,9 @@ function displayResults(data) {
     currentPage = 1;
     renderTablePage(currentPage);
     document.getElementById("results").style.display = "block";
+
+    // Show request body preview for first test case
+    showRequestBodyFromTestCase(parsed[0]);
 }
 
 function flattenTestCase(testCase) {
@@ -195,16 +200,33 @@ function renderTablePage(page) {
         tableHeader.appendChild(th);
     });
 
+    // Re-parse original test cases for row click usage
+    let originalTestCases;
+    try {
+        originalTestCases = currentTestCases.length ? currentTestCases : [];
+    } catch {
+        originalTestCases = [];
+    }
+
     const start = (page - 1) * pageSize;
     const pageItems = paginatedData.slice(start, start + pageSize);
 
-    pageItems.forEach(item => {
+    pageItems.forEach((item, index) => {
         const tr = document.createElement("tr");
         headers.forEach(header => {
             const td = document.createElement("td");
             td.textContent = item[header];
             tr.appendChild(td);
         });
+
+        // On row click, show request body of corresponding original test case
+        tr.addEventListener("click", () => {
+            const originalIndex = start + index;
+            if (originalIndex < originalTestCases.length) {
+                showRequestBodyFromTestCase(originalTestCases[originalIndex]);
+            }
+        });
+
         tableBody.appendChild(tr);
     });
 
@@ -464,4 +486,24 @@ function displayGeneratedJavaCode(code) {
 
     codeBlock.textContent = code;
     outputContainer.style.display = "block";
+}
+
+function showRequestBodyFromTestCase(testCase) {
+    const requestBodyDisplay = document.getElementById("requestBodyDisplay");
+    if (!testCase || !testCase.request || !testCase.request.body) {
+        requestBodyDisplay.value = "";
+        return;
+    }
+    if (typeof testCase.request.body === "object") {
+        requestBodyDisplay.value = JSON.stringify(testCase.request.body, null, 2);
+    } else if (typeof testCase.request.body === "string") {
+        try {
+            const parsed = JSON.parse(testCase.request.body);
+            requestBodyDisplay.value = JSON.stringify(parsed, null, 2);
+        } catch {
+            requestBodyDisplay.value = testCase.request.body;
+        }
+    } else {
+        requestBodyDisplay.value = String(testCase.request.body);
+    }
 }

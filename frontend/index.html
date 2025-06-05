@@ -33,12 +33,12 @@
                <textarea id="requestBody" rows="6" placeholder='{"name": "John"}'></textarea>
                <div class="button-row">
                   <button id="generateBtn" onclick="generateTestCases()">
-                  <span class="spinner" style="display:none;"></span>
-                  <span class="btn-text">Generate</span>
+                     <span class="spinner" style="display:none;"></span>
+                     <span class="btn-text">Generate</span>
                   </button>
                   <button id="clearBtn" onclick="clearInputs()">
-                  <span class="spinner" style="display:none;"></span>
-                  <span class="btn-text">Clear</span>
+                     <span class="spinner" style="display:none;"></span>
+                     <span class="btn-text">Clear</span>
                   </button>
                </div>
                <div id="results" style="display:none; margin-top: 20px;">
@@ -53,11 +53,17 @@
                      <button id="downloadBtn" style="display:none;" onclick="downloadCSV()">Download CSV</button>
                      <button id="generateCodeBtn" style="display:none;" onclick="generateCode()">Generate Code</button>
                   </div>
+
+                  <!-- Request Body Preview textarea -->
+                  <h3 style="margin-top: 20px;">Request Body Preview</h3>
+                  <textarea id="requestBodyDisplay" rows="8" readonly
+                            style="width:100%; font-family: monospace; background:#f0f0f0; border: 1px solid #ccc; padding: 10px;"></textarea>
+
                   <!-- Code layout below buttons -->
                   <div id="codeLayout" class="code-layout" style="margin-top: 30px; display:none;">
                      <div class="code-header">
                         <label>
-                        <input type="checkbox" id="toggleCodeType" onchange="toggleCodeType()" />Show Karate Feature Code
+                           <input type="checkbox" id="toggleCodeType" onchange="toggleCodeType()" />Show Karate Feature Code
                         </label>
                         <div id="spinner" style="display:none;">
                           <svg width="24" height="24" viewBox="0 0 38 38" stroke="#555">

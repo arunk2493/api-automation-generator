@@ -48,9 +48,7 @@ Return your output as a single valid JSON array of test cases. Each object must 
       "body": {{ /* JSON body specific to this test case */ }}
     }},
     "expected_status": 200,
-    "expected_response_contains": ["field1", "value snippet", "error message", ...]
   }},
-  ...
 ]
 
 Ensure the output is:
