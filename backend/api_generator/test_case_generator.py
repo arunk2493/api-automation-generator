@@ -20,16 +20,6 @@ class TestCaseGenerator:
         except Exception as e:
             logger.error(f"Error initializing Gemini model: {e}")
             raise
-        
-    @staticmethod
-    def sanitize_json(text: str) -> str:
-        # Remove JS-style single line comments
-        text = re.sub(r"//.*?$", "", text, flags=re.MULTILINE)
-        # Remove JS-style block comments
-        text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-        # Remove trailing commas before } or ]
-        text = re.sub(r",\s*([\]}])", r"\1", text)
-        return text
 
     @staticmethod
     def clean_json_code_block(text: str) -> str:
@@ -47,17 +37,52 @@ class TestCaseGenerator:
         cleaned = re.sub(r"```(?:[a-zA-Z]+\n)?|```", "", text).strip()
         return cleaned
 
+    @staticmethod
+    def sanitize_json(text: str) -> str:
+        """
+        Remove trailing commas and invalid control characters to make JSON parseable.
+        """
+        # Remove JS-style comments
+        text = re.sub(r"//.*?$", "", text, flags=re.MULTILINE)
+        # Remove trailing commas before } or ]
+        text = re.sub(r",\s*([\]}])", r"\1", text)
+        # Replace invalid control characters (like \x00) with space or remove
+        text = re.sub(r"[\x00-\x1f\x7f]", " ", text)
+        return text.strip()
+    
+    @staticmethod
+    def extract_json_substring(text: str) -> str:
+        """
+        Extract JSON array or object substring from a mixed text.
+        """
+        match = re.search(r"(\[.*\])", text, flags=re.DOTALL)
+        if not match:
+            match = re.search(r"(\{.*\})", text, flags=re.DOTALL)
+        if match:
+            return match.group(1)
+        return text  # fallback
+
     def generate_test_cases(self, api_path: str, method: str, body: str, sample_response: str):
         try:
-            prompt = build_test_case_prompt(api_path, method, body, sample_response)
+            request_body_str = json.dumps(body) if isinstance(body, dict) else str(body)
+
+            prompt = build_test_case_prompt(api_path, method, request_body_str, sample_response)
             logger.info("Sending test case prompt to Gemini: %s %s", method, api_path)
             response = self.model.generate_content(prompt)
 
             raw_text = response.text.strip()
-            cleaned_text = self.clean_json_code_block(raw_text)
-            sanitized_text = self.sanitize_json(cleaned_text)
-            test_cases = json.loads(sanitized_text)
+            logger.debug(f"Raw model response:\n{raw_text}")
 
+            cleaned_text = self.clean_json_code_block(raw_text)
+            logger.debug(f"Cleaned JSON code block:\n{cleaned_text}")
+
+            extracted_json = self.extract_json_substring(cleaned_text)
+            logger.debug(f"Extracted JSON substring:\n{extracted_json}")
+
+            sanitized_text = self.sanitize_json(extracted_json)
+            logger.debug(f"Sanitized JSON string:\n{sanitized_text}")
+
+            test_cases = json.loads(sanitized_text)
             return test_cases
 
         except Exception as e:
@@ -82,7 +107,6 @@ class TestCaseGenerator:
         except Exception as e:
             logger.exception("Error while generating Java test method for: [%s] %s", method.upper(), api_path)
             raise RuntimeError(f"Failed to generate Java test method: {str(e)}") from e
-
 
     def generate_karate_feature(self, api_path: str, method: str, body: str) -> str:
         prompt = build_karate_feature_prompt(api_path, method, body)

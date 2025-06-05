@@ -63,7 +63,7 @@ import org.testng.annotations.Test;
 import static org.hamcrest.Matchers.*;
 import static io.restassured.RestAssured.given;
 
-public class UsersApiTest {
+public class ApiTest {
 
     @BeforeMethod
     public void setUp() {

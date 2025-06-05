@@ -26,7 +26,7 @@ function clearInputs() {
         document.getElementById("method").value = "GET";
         document.getElementById("apiPath").value = "";
         document.getElementById("requestBody").value = "";
-        document.getElementById("requestBody").value = "";
+        document.getElementById("responseSample").value = "";
         document.getElementById("toggleCodeType").checked = false;
         downloadBtn.style.display = "none"; // hide download button on clear
         generateBtn.disabled = false;
@@ -49,7 +49,17 @@ async function generateTestCases() {
 
     const method = document.getElementById("method").value.trim();
     const apiPath = document.getElementById("apiPath").value.trim();
-    const requestBodyString = document.getElementById("requestBody").value.trim() || "";
+    let requestBodyString = document.getElementById("requestBody").value.trim() || "";
+    let requestBodyObj;
+    try {
+        requestBodyObj = requestBodyString ? JSON.parse(requestBodyString) : {};
+    } catch (err) {
+        showToast("Request body is not valid JSON: " + err.message);
+        spinner.style.display = "none";
+        btnText.textContent = "Generate";
+        generateBtn.disabled = false;
+        return;
+    }
 
     try {
         const response = await fetch("http://localhost:8000/generate-test-cases", {
@@ -61,7 +71,7 @@ async function generateTestCases() {
                 method,
                 path: apiPath,
                 body: requestBodyString,
-                sample_response: ""
+                sample_response: document.getElementById("responseSample").value.trim() || "{}"
             }),
         });
 
