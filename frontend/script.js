@@ -49,7 +49,7 @@ async function generateTestCases() {
 
     const method = document.getElementById("method").value.trim();
     const apiPath = document.getElementById("apiPath").value.trim();
-    let requestBodyString = document.getElementById("requestBody").value.trim() || "";
+    const requestBodyString = document.getElementById("requestBody").value.trim() || "";
 
     try {
         const response = await fetch("http://localhost:8000/generate-test-cases", {
@@ -60,7 +60,8 @@ async function generateTestCases() {
             body: JSON.stringify({
                 method,
                 path: apiPath,
-                body: requestBodyString
+                body: requestBodyString,
+                sample_response: ""
             }),
         });
 
@@ -71,30 +72,26 @@ async function generateTestCases() {
         }
 
         const data = await response.json();
-
-        testCasesParsed = parseTestCases(data);
-        console.log("Parsed test cases:", testCasesParsed);
+        const testCasesParsed = parseTestCases(data);
 
         if (!Array.isArray(testCasesParsed) || testCasesParsed.length === 0) {
             throw new Error("Parsed array is empty or invalid.");
         }
 
         currentTestCases = testCasesParsed;
-
         displayResults(testCasesParsed);
         showToast("Test cases generated!");
         document.getElementById('results').style.display = 'block';
 
-        // Show buttons only if test cases exist
         downloadBtn.style.display = "inline-block";
         generateCodeBtn.style.display = "inline-block";
-
-        // Hide code layout until Generate Code is clicked
         codeLayout.style.display = "none";
 
     } catch (error) {
         showToast("Fetch error: " + error.message);
-        if (typeof data !== "undefined") showRawJsonModal(JSON.stringify(data, null, 2));
+        if (typeof data !== "undefined") {
+            showRawJsonModal(JSON.stringify(data, null, 2));
+        }
     } finally {
         spinner.style.display = "none";
         btnText.textContent = "Generate";
@@ -103,6 +100,7 @@ async function generateTestCases() {
         generateCodeBtn.disabled = false;
     }
 }
+
 
 function toggleButtonSpinner(button, show) {
     const spinner = button.querySelector(".spinner");
@@ -277,49 +275,12 @@ function showToast(message, duration = 5000) {
 
 function parseTestCases(data) {
     if (!data.test_cases || !Array.isArray(data.test_cases)) {
-        throw new Error("Invalid data format");
+        throw new Error("Invalid data format: test_cases must be an array");
     }
-
-    try {
-        let lines = data.test_cases;
-
-        // Remove markdown code fences and empty lines
-        lines = lines.filter(line => !line.trim().startsWith("```") && line.trim() !== "");
-
-        // Remove lines that are comments or explanations
-        lines = lines.filter(line => !line.trim().startsWith("*") && !line.includes("Improvements"));
-
-        // Join into one string
-        let jsonString = lines.join("\n");
-
-        // Remove JS-style comments (// ...)
-        jsonString = jsonString.replace(/\/\/.*$/gm, "");
-
-        // Remove trailing commas before closing braces/brackets
-        jsonString = jsonString.replace(/,\s*([\]}])/g, "$1");
-
-        // Replace "string".repeat(n) with repeated string
-        jsonString = jsonString.replace(/"([^"]*)"\.repeat\((\d+)\)/g, (match, str, count) => {
-            return `"${str.repeat(Number(count))}"`;
-        });
-
-        // Trim to just the JSON array part
-        const arrayStart = jsonString.indexOf("[");
-        const arrayEnd = jsonString.lastIndexOf("]");
-
-        if (arrayStart === -1 || arrayEnd === -1) {
-            throw new Error("Could not locate valid JSON array in response");
-        }
-
-        const cleanArrayStr = jsonString.substring(arrayStart, arrayEnd + 1);
-
-        return JSON.parse(cleanArrayStr);
-    } catch (err) {
-        console.error("JSON parse error:", err);
-        showToast(`Failed to parse test cases: ${err.message}`, 10000);
-        return [];
-    }
+    return data.test_cases;
 }
+
+
 
 function showRawJsonModal(jsonStr) {
     document.getElementById("rawJsonContent").textContent = jsonStr;

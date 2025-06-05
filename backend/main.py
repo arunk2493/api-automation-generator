@@ -18,9 +18,10 @@ app.add_middleware(
 )
 
 class TestInput(BaseModel):
-    method: str
     path: str
+    method: str
     body: str
+    sample_response: str
 
 class TestCasesInput(BaseModel):
     test_cases: List[Dict] = Field(..., alias="testCases")
@@ -34,10 +35,11 @@ generator = TestCaseGenerator()
 @app.post("/generate-test-cases")
 async def generate_test_cases(data: TestInput):
     try:
-        test_cases = generator.generate_test_cases(data.path, data.method, data.body)
+        test_cases = generator.generate_test_cases(data.path, data.method, data.body, data.sample_response)
         return {"test_cases": test_cases}
     except Exception as e:
         return {"error": str(e)}
+
 
 @app.post("/generate-code/java")
 async def generate_java_code(data: TestCasesInput):
@@ -65,7 +67,7 @@ public class UsersApiTest {
 
     @BeforeMethod
     public void setUp() {
-        RestAssured.baseURI = "https://reqres.in/"; // Replace with your base URI if different
+        RestAssured.baseURI = ""; // Replace with your base URI if different
     }
 
     @AfterMethod

@@ -1,31 +1,61 @@
-def build_test_case_prompt(path: str, method: str, body: str) -> str:
+def build_test_case_prompt(path: str, method: str, request_body: str, sample_response: str) -> str:
     return f"""
 You are an expert API test automation engineer.
-Generate exhaustive REST API test cases in JSON for the following API:
-- Path: {path}
-- Method: {method}
-- Request Body: {body}
 
-Include:
-- All Positive test cases (valid input)
-- All Negative test cases (missing or invalid fields)
-- All Edge cases (long strings, special characters)
-- Expected status code and response content for all cases
+Your task is to generate a comprehensive suite of REST API test cases in **valid JSON format** for the following API endpoint:
 
-Output in this JSON format:
+- **Path**: {path}
+- **Method**: {method}
+- **Request Body (example or schema)**: {request_body}
+- **Sample Response Body**: {sample_response}
+
+### Requirements:
+Generate a thorough set of test cases that cover:
+
+#### ✅ Positive Test Cases:
+- All valid and realistic inputs using the provided request body schema.
+- Use real values inferred from the sample response where applicable.
+- Ensure coverage of optional fields if present.
+
+#### ❌ Negative Test Cases:
+- Missing required fields.
+- Invalid field types (e.g., string instead of number).
+- Unexpected fields in the body.
+- Invalid paths, unsupported methods, and malformed inputs.
+
+#### 🧪 Edge Cases:
+- Extremely long string values.
+- Special characters and emojis.
+- Empty strings or nulls where allowed.
+- Boundary numeric values (e.g., 0, max int).
+- Case sensitivity issues if applicable.
+
+#### ✅ Response Validation:
+- Use the provided sample response to derive expected fields, values, and structure.
+- Include `expected_status` (e.g., 200, 400, 404, 500).
+- Include `expected_response_contains` (use key snippets or field values from the sample response).
+
+### Output Format:
+Return your output as a single valid JSON array of test cases. Each object must follow this exact schema:
+
 [
   {{
-    "test_name": "",
-    "description": "",
+    "test_name": "Short descriptive name",
+    "description": "What this test checks",
     "request": {{
-      "method": "",
-      "path": "",
-      "body": {{}}
+      "method": "{method}",
+      "path": "{path}",
+      "body": {{ /* JSON body specific to this test case */ }}
     }},
-    "expected_status": "",
-    "expected_response_contains": ""
-  }}
+    "expected_status": 200,
+    "expected_response_contains": ["field1", "value snippet", "error message", ...]
+  }},
+  ...
 ]
+
+Ensure the output is:
+- **Valid JSON (no markdown fences or comments)**
+- Free of explanations or extra text outside the JSON array
 """
 
 
@@ -80,7 +110,7 @@ def build_karate_feature_prompt(api_path: str, method: str, bodies: list[str]) -
 Feature: Test {method.upper()} {api_path}
 
   Background:
-    * url 'https://reqres.in'
+    * url ''
 
   Scenario Outline: Call API with example inputs
     * path '{api_path.lstrip("/")}' 

@@ -27,7 +27,9 @@
                </select>
                <label for="apiPath">API Path:</label>
                <textarea id="apiPath" rows="1" placeholder="/api/v1/users"></textarea>
-               <label for="requestBody" id="requestLabel">Request JSON / Query Params:</label>
+               <label for="responseSample" id="responseLabel">Sample Response</label>
+               <textarea id="responseSample" rows="8"></textarea>
+               <label for="requestBody" id="requestLabel">Payload for POST,PUT,DELETE</label>
                <textarea id="requestBody" rows="6" placeholder='{"name": "John"}'></textarea>
                <div class="button-row">
                   <button id="generateBtn" onclick="generateTestCases()">
