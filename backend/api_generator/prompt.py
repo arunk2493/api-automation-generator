@@ -44,6 +44,8 @@ Requirements:
 - Add a short, clear description inside the @Test(description = "...").
 - Include REST Assured request/response code using given().when().then() syntax.
 - Donot include duplicate test cases or test data
+- Donot include any other key points other than generated test cases in JSON
+- Donot show Key improvements from the response
 - Assert:
   - The correct HTTP status code.
   - Key response fields using body() assertions.
